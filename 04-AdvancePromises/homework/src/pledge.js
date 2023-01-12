@@ -5,50 +5,95 @@ Promises Workshop: construye la libreria de ES6 promises, pledge.js
 // // TU CÓDIGO AQUÍ:
 
 function $Promise (executor){
-    if(typeof executor !== "function"){
-        throw  new TypeError("Executor y luego function")
-    }
-    this._state = "pending"
+  if(typeof executor !== "function") {
+    throw  new TypeError("Cualquier mensaje de error conteniendo Executor y luego function")
+  }
+  
+  this._state = "pending" //instancia de promesa que comienza como pending
+  this._handlerGroups = []
+  this._value = undefined
 
-    const resolve = (value) => {this._internalResolve(value)}
-    const reject = (reason) => {this._internalReject(reason)}
-    executor(resolve,reject)
-//  this._$Promise.then()
+  const resolve = (value) => {this._internalResolve(value)}
+  const reject = (reason) => {this._internalReject(reason)}
+  
+  //executor(this._internalResolve.bind(this),this._internalReject.bind(this))
+  executor(resolve,reject)
+
 }
 
-$Promise.prototype._internalResolve = function (data){
-    if(this._state === "pending"){
-        this._state = "fulfilled"
-        this._value = data
-    } 
+//metodo de instancia // $Promise.prototype._nombreDelMetodo = () => {}
+
+$Promise.prototype._internalResolve = function (value){ 
+  if(this._state === "pending"){ //no afecta a una promesa ya completada 
+      this._state = "fulfilled"
+      this._value = value // value = data
+      //hago los llamados
+      this._callHandlers(value)
+  } 
 }
 
 $Promise.prototype._internalReject = function (reason){  
-    if(this._state === "pending"){
-        this._state = "rejected"
-        this._value = reason
-    } 
+  if(this._state === "pending"){
+      this._state = "rejected"
+      this._value = reason
+      //hago los llamados
+      this._callHandlers(reason)
+  } 
 }
 
 
-$Promise.prototype.then = function (succesHandler, errorHandler) {
-    //  if (typeof succesHandler !== "function") succesHandler = false
-    //     if (typeof errorHandler !== "function") errorHandler = false
+$Promise.prototype.then = function (successHandler, errorHandler) {
+  if (typeof successHandler !== "function") successHandler = false;
+  if (typeof errorHandler !== "function") errorHandler = false;
 
-//     const handleGroup = {
-//         succesCallback : succesHandler,
-//         errorCallBack : errorHandler
-//     }
+  const downstreamPromise = new $Promise(() => {})
 
-//     this._handleGroup.push(handleGroup)
+  const handlerGroup = {
+    successCb: successHandler, 
+    errorCb: errorHandler, 
+    downstreamPromise
+  };
 
-//      if (this._state === "fulfilled") succesHandler (this._value)
-//      if (this._state === "rejected") errorHandler (this.value)
-// }
+  this._handlerGroups.push(handlerGroup);
+//this._handlerGroups.push({
+//  succesCb: typeof successCb === "function" ? successCb : false
+//  errorCb: typeof errorCb === "function" ? errorCb : false
+//  })
 
-// $Promise.prototype._callHandlers = () => {
-//     _internalResolve()
-// }
+  this._state !== 'pending' && this._callHandlers()
+//            hago los llamados
+  return downstreamPromise
+
+};
+
+
+//logica de los llamados
+$Promise.prototype._callHandlers = function () {
+  while (this._handlerGroups.length) { 
+    //mientras haya handlers para ejecutar: ejecuta
+    // si esta resolved: succesHandler
+    // si esta rejected: errorHandler
+    const group = this._handlerGroups.shift(); //Saco los handlers que pushie
+
+    this._state === "fulfilled" &&
+      group.successCb &&
+      group.successCb(this._value);
+// if (this._state === "fulfilled" && group.succesCb) group.succesCb(this._value) //recibe el valor de la promesa
+
+    this._state === "rejected" &&
+      group.errorCb &&
+      group.errorCb(this._value);
+// if (this._state === "rejected" && group.errorCb) group.errorCb(this._value) //recibe el valor de la promesa
+  }
+};
+
+
+
+
+$Promise.prototype.catch = function (errorHandler) {
+  this.then(null,errorHandler)
+
+}
 
 
 

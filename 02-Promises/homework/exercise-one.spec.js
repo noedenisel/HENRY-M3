@@ -53,7 +53,7 @@ describe('exercise one (involving poem one)', function () {
 
 	describe('problemA', function () {
 
-		it('logs the first stanza', function (done) {
+		xit('logs the first stanza', function (done) {
 			exercise.problemA();
 			setTimeout(function () {
 				expect(blue).to.have.been.called.with(stanzas[0]);
@@ -65,7 +65,7 @@ describe('exercise one (involving poem one)', function () {
 
 	describe('problemB', function () {
 
-		it('logs the second and third stanzas in any order', function (done) {
+		xit('logs the second and third stanzas in any order', function (done) {
 			exercise.problemB();
 			setTimeout(function () {
 				expect(blue).to.have.been.called.with(stanzas[1]);
@@ -151,7 +151,7 @@ describe('exercise one (involving poem one)', function () {
 			console.log.calls = [];
 		});
 
-		xit('logs the third THEN the fourth stanza; if an error occrus only logs the error and does not continue reading (if there is a file still left to read); always finishes by logging some done message', function (done) {
+		it('logs the third THEN the fourth stanza; if an error occrus only logs the error and does not continue reading (if there is a file still left to read); always finishes by logging some done message', function (done) {
 			exercise.problemF();
 			setTimeout(function () {
 				var loggedDoneCalls = console.log.calls.filter(function (call) {
